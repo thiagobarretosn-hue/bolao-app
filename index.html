@@ -26,13 +26,16 @@
   // Registro de bolões: apelido (slug) → URL /exec da implantação "Qualquer pessoa".
   // Para um novo bolão (cópia), adicione uma linha aqui: 'apelido': 'https://.../exec'
   var REG = {
-    'copa': 'https://script.google.com/macros/s/AKfycbwxLnytJy0TpQvBOe7OFYKBSOeNA-38l_d2cOJi2Ym5gHwILslgavYpkrk51oi2Dec1/exec'
-    // ,'amigos': 'https://script.google.com/macros/s/COLE_O_EXEC_DA_COPIA/exec'
+    'copa':  { u: 'https://script.google.com/macros/s/AKfycbwxLnytJy0TpQvBOe7OFYKBSOeNA-38l_d2cOJi2Ym5gHwILslgavYpkrk51oi2Dec1/exec', n: 'Bolão Copa do Mundo 2026' },
+    'ambar': { u: 'https://script.google.com/macros/s/AKfycbyYRghPF4pO82aRFsRzheTpub5alfpwNaKNEchYmMAOEqxtqRsiirAtyfQab0O14D0P/exec', n: 'Bolão Copa do Mundo 2026 (Ambar)' }
+    // novo bolão: 'apelido': { u: 'https://.../exec', n: 'Nome do Bolão' }
   };
   var q = new URLSearchParams(location.search);
   var b = q.get('b');                       // apelido do bolão
   var appParam = q.get('app');              // fallback: URL /exec direta
-  var BASE = appParam || REG[b] || REG['copa'];
+  var entry = appParam ? { u: appParam, n: '' } : (REG[b] || REG['copa']);
+  var BASE = entry.u;
+  if (entry.n) { try { document.title = entry.n; } catch (e) {} }
   var slug = appParam ? 'app' : (b && REG[b] ? b : 'copa');
   var KEY = 'bolao_token_' + slug;          // token separado por bolão
   try { // migra a chave antiga do bolão principal
