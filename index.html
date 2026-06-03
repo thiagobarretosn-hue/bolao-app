@@ -45,8 +45,15 @@
   } catch (e) {}
   var p = q.get('p');
   try { if (p) localStorage.setItem(KEY, p); else p = localStorage.getItem(KEY); } catch (e) {}
+  var adm = q.get('admin');
+  var AKEY = 'bolao_admin_' + slug;
+  try { if (adm) localStorage.setItem(AKEY, adm); else adm = localStorage.getItem(AKEY); } catch (e) {}
   var v = q.get('v');
-  var src = BASE + (p ? ('?p=' + encodeURIComponent(p)) : '') + (v ? ((p ? '&' : '?') + 'v=' + encodeURIComponent(v)) : '');
+  var parts = [];
+  if (p) parts.push('p=' + encodeURIComponent(p));
+  if (v) parts.push('v=' + encodeURIComponent(v));
+  if (adm) parts.push('admin=' + encodeURIComponent(adm));
+  var src = BASE + (parts.length ? ('?' + parts.join('&')) : '');
   var ifr = document.getElementById('app');
   ifr.onload = function(){ var s=document.getElementById('splash'); if(s) s.style.display='none'; };
   ifr.src = src;
