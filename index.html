@@ -23,10 +23,23 @@
   <div id="splash"><img src="icon-192.png" alt=""><div class="t">Carregando o bolão…</div></div>
   <iframe id="app" allow="clipboard-write"></iframe>
 <script>
-  // URL do app (Apps Script web app — implantação "Qualquer pessoa").
-  var BASE = 'https://script.google.com/macros/s/AKfycbwxLnytJy0TpQvBOe7OFYKBSOeNA-38l_d2cOJi2Ym5gHwILslgavYpkrk51oi2Dec1/exec';
-  var KEY = 'bolao_token';
+  // Registro de bolões: apelido (slug) → URL /exec da implantação "Qualquer pessoa".
+  // Para um novo bolão (cópia), adicione uma linha aqui: 'apelido': 'https://.../exec'
+  var REG = {
+    'copa': 'https://script.google.com/macros/s/AKfycbwxLnytJy0TpQvBOe7OFYKBSOeNA-38l_d2cOJi2Ym5gHwILslgavYpkrk51oi2Dec1/exec'
+    // ,'amigos': 'https://script.google.com/macros/s/COLE_O_EXEC_DA_COPIA/exec'
+  };
   var q = new URLSearchParams(location.search);
+  var b = q.get('b');                       // apelido do bolão
+  var appParam = q.get('app');              // fallback: URL /exec direta
+  var BASE = appParam || REG[b] || REG['copa'];
+  var slug = appParam ? 'app' : (b && REG[b] ? b : 'copa');
+  var KEY = 'bolao_token_' + slug;          // token separado por bolão
+  try { // migra a chave antiga do bolão principal
+    if (slug === 'copa' && !localStorage.getItem(KEY)) {
+      var old = localStorage.getItem('bolao_token'); if (old) localStorage.setItem(KEY, old);
+    }
+  } catch (e) {}
   var p = q.get('p');
   try { if (p) localStorage.setItem(KEY, p); else p = localStorage.getItem(KEY); } catch (e) {}
   var v = q.get('v');
