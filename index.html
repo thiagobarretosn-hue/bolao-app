@@ -33,12 +33,22 @@
     // novo bolão: 'apelido': { u: 'https://.../exec', n: 'Nome do Bolão' }
   };
   var q = new URLSearchParams(location.search);
-  var b = q.get('b');                       // apelido do bolão
-  var appParam = q.get('app');              // fallback: URL /exec direta
-  var entry = appParam ? { u: appParam, n: '' } : (REG[b] || REG['copa']);
+  var b = (q.get('b') || '').toLowerCase();        // apelido (case-insensitive)
+  var appParam = q.get('app');                      // modo self-serve: URL /exec direta
+  var slugParam = (q.get('slug') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  var nParam = q.get('n');                           // nome do bolão (self-serve)
+  var regCI = {}; for (var rk in REG) { regCI[rk.toLowerCase()] = REG[rk]; } // REG sem ligar p/ maiúsc/minúsc
+  var entry, slug;
+  if (appParam) {                                   // ?app=<exec>&slug=apelido&n=Nome  → não precisa do REG
+    entry = { u: appParam, n: nParam || '' };
+    slug = slugParam || 'app';
+  } else if (b && regCI[b]) {                        // ?b=apelido registrado no REG
+    entry = regCI[b]; slug = b;
+  } else {                                           // padrão
+    entry = regCI['copa'] || REG['copa']; slug = 'copa';
+  }
   var BASE = entry.u;
   if (entry.n) { try { document.title = entry.n; } catch (e) {} }
-  var slug = appParam ? 'app' : (b && REG[b] ? b : 'copa');
   var KEY = 'bolao_token_' + slug;          // token separado por bolão
   try { // migra a chave antiga do bolão principal
     if (slug === 'copa' && !localStorage.getItem(KEY)) {
