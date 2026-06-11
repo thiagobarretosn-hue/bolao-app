@@ -75,25 +75,28 @@
   ifr.src = src;
   if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }
 // --- OUVINTE DE LOGOUT ATUALIZADO (NO INDEX.HTML) ---
-  window.addEventListener('message', function(e) {
-    if (e.data === 'logout') {
-      // 1. Limpa o cofre principal da Casca (GitHub Pages)
-      try {
-        localStorage.clear();
-        sessionStorage.clear();
-      } catch(err) {}
+ // --- OUVINTE DE LOGOUT ATUALIZADO (SOLUÇÃO DEFINITIVA) ---
+    window.addEventListener('message', function(e) {
+      if (e.data === 'logout') {
+        try {
+          // 1. Limpa o cofre principal da Casca (GitHub Pages)
+          localStorage.clear();
+          sessionStorage.clear();
+        } catch(err) {}
 
-      // 2. Define o URL limpo (com salvaguarda para outros bolões)
-      var urlOficial = 'https://thiagobarretosn-hue.github.io/bolao-app/';
-      if (typeof slug !== 'undefined' && slug !== 'copa') {
-        urlOficial += '?b=' + slug;
+        // 2. Define o URL oficial limpo
+        var urlOficial = 'https://thiagobarretosn-hue.github.io/bolao-app/';
+        if (typeof slug !== 'undefined' && slug !== 'copa') {
+          urlOficial += '?b=' + slug;
+        }
+
+        // 3. Truque "Cache Buster": Adiciona um carimbo de tempo
+        // Isso força o navegador a ignorar a cache do Service Worker
+        var cacheBuster = (urlOficial.indexOf('?') > -1 ? '&' : '?') + 'sair=' + Date.now();
+        window.location.replace(urlOficial + cacheBuster);
       }
-
-      // 3. Usa o 'replace' para substituir o histórico, impedindo que o utilizador
-      // carregue no botão "Voltar" do navegador e volte a estar logado.
-      window.location.replace(urlOficial);
-    }
-  });
+    });
+  ;
 
 </script>
 </body>
