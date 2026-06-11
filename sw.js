@@ -1,5 +1,5 @@
 // Service worker mínimo — cacheia a "casca" (fachada). O app em si carrega do iframe.
-const CACHE = 'bolao-fachada-v1';
+const CACHE = 'bolao-fachada-v2';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-180.png'];
 
 self.addEventListener('install', e => {
