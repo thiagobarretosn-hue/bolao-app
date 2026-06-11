@@ -74,25 +74,24 @@
   ifr.onload = function(){ var s=document.getElementById('splash'); if(s) s.style.display='none'; };
   ifr.src = src;
   if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }
-// --- OUVINTE DE LOGOUT ATUALIZADO (FORÇAR URL OFICIAL) ---
+// --- OUVINTE DE LOGOUT ATUALIZADO (NO INDEX.HTML) ---
   window.addEventListener('message', function(e) {
     if (e.data === 'logout') {
+      // 1. Limpa o cofre principal da Casca (GitHub Pages)
       try {
-        // 1. Apaga permanentemente os tokens guardados no navegador
-        localStorage.removeItem(KEY);
-        localStorage.removeItem(AKEY);
+        localStorage.clear();
+        sessionStorage.clear();
       } catch(err) {}
 
-      // 2. Define o URL oficial exato para onde a página deve voltar
+      // 2. Define o URL limpo (com salvaguarda para outros bolões)
       var urlOficial = 'https://thiagobarretosn-hue.github.io/bolao-app/';
-
-      // Se o utilizador estiver num bolão específico (ex: AMBAR), preserva apenas o identificador do bolão
-      if (slug !== 'copa') {
+      if (typeof slug !== 'undefined' && slug !== 'copa') {
         urlOficial += '?b=' + slug;
       }
 
-      // 3. Redireciona e atualiza a página principal de forma totalmente limpa
-      window.location.href = urlOficial;
+      // 3. Usa o 'replace' para substituir o histórico, impedindo que o utilizador
+      // carregue no botão "Voltar" do navegador e volte a estar logado.
+      window.location.replace(urlOficial);
     }
   });
 
