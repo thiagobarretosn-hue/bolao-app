@@ -74,6 +74,28 @@
   ifr.onload = function(){ var s=document.getElementById('splash'); if(s) s.style.display='none'; };
   ifr.src = src;
   if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }
+// --- OUVINTE DE LOGOUT ATUALIZADO (FORÇAR URL OFICIAL) ---
+  window.addEventListener('message', function(e) {
+    if (e.data === 'logout') {
+      try {
+        // 1. Apaga permanentemente os tokens guardados no navegador
+        localStorage.removeItem(KEY);
+        localStorage.removeItem(AKEY);
+      } catch(err) {}
+
+      // 2. Define o URL oficial exato para onde a página deve voltar
+      var urlOficial = 'https://thiagobarretosn-hue.github.io/bolao-app/';
+
+      // Se o utilizador estiver num bolão específico (ex: AMBAR), preserva apenas o identificador do bolão
+      if (slug !== 'copa') {
+        urlOficial += '?b=' + slug;
+      }
+
+      // 3. Redireciona e atualiza a página principal de forma totalmente limpa
+      window.location.href = urlOficial;
+    }
+  });
+
 </script>
 </body>
 </html>
