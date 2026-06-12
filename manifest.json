@@ -1,7 +1,7 @@
 {
-  "name": "Bolão Copa do Mundo 2026",
-  "short_name": "Bolão Copa",
-  "description": "Palpites, jogos, classificação e chaveamento ao vivo da Copa 2026.",
+  "name": "Bolão Copa 2026 — AMBAR",
+  "short_name": "Bolão AMBAR",
+  "description": "Palpites, jogos, classificação e chaveamento ao vivo da Copa 2026 — AMBAR.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",

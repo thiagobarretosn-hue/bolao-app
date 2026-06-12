@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>Bolão Copa do Mundo 2026</title>
+<title>Bolão Copa 2026 — AMBAR</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#0b1220">
@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Bolão Copa">
+<meta name="apple-mobile-web-app-title" content="Bolão AMBAR">
 <style>
   html,body{margin:0;height:100%;background:#0b1220;overflow:hidden}
   #app{border:0;width:100%;height:100vh;height:100dvh;display:block}
@@ -25,79 +25,71 @@
   <div id="splash"><img src="icon-192.png" alt=""><div class="t">Carregando o bolão…</div></div>
   <iframe id="app" allow="clipboard-write"></iframe>
 <script>
-  // Registro de bolões: apelido (slug) → URL /exec da implantação "Qualquer pessoa".
-  // Para um novo bolão (cópia), adicione uma linha aqui: 'apelido': 'https://.../exec'
-  var REG = {
-    'copa': { u: 'https://script.google.com/macros/s/AKfycbwxLnytJy0TpQvBOe7OFYKBSOeNA-38l_d2cOJi2Ym5gHwILslgavYpkrk51oi2Dec1/exec', n: 'Bolão Copa do Mundo 2026' },
-    'AMBAR': { u: 'https://script.google.com/macros/s/AKfycbwuuW1pKmSopbNvnV5qA7gdZK653l9wqJy2b4rsM3W98AOrVGHupmsATDkEz_aanPk-/exec', n: 'Bolão Copa do Mundo 2026 (AMBAR)' }
-    // novo bolão: 'apelido': { u: 'https://.../exec', n: 'Nome do Bolão' }
-  };
+  // Esta fachada é o app da AMBAR. O Bolão Copa migrou para repo próprio
+  // (https://thiagobarretosn-hue.github.io/bolao-copa/) — PWA separado, sem choque.
   var q = new URLSearchParams(location.search);
-  var b = (q.get('b') || '').toLowerCase();        // apelido (case-insensitive)
-  var appParam = q.get('app');                      // modo self-serve: URL /exec direta
-  var slugParam = (q.get('slug') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
-  var nParam = q.get('n');                           // nome do bolão (self-serve)
-  var regCI = {}; for (var rk in REG) { regCI[rk.toLowerCase()] = REG[rk]; } // REG sem ligar p/ maiúsc/minúsc
-  var entry, slug;
-  if (appParam) {                                   // ?app=<exec>&slug=apelido&n=Nome  → não precisa do REG
-    entry = { u: appParam, n: nParam || '' };
-    slug = slugParam || 'app';
-  } else if (b && regCI[b]) {                        // ?b=apelido registrado no REG
-    entry = regCI[b]; slug = b;
-  } else {                                           // padrão
-    entry = regCI['copa'] || REG['copa']; slug = 'copa';
-  }
-  var BASE = entry.u;
-  if (entry.n) { try {
-    document.title = entry.n;                                  // título da aba / rótulo do atalho (Android)
-    var _amt = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-    if (_amt) _amt.setAttribute('content', entry.n);           // nome na tela inicial do iPhone
-  } catch (e) {} }
-  var KEY = 'bolao_token_' + slug;          // token separado por bolão
-  try { // migra a chave antiga do bolão principal
-    if (slug === 'copa' && !localStorage.getItem(KEY)) {
-      var old = localStorage.getItem('bolao_token'); if (old) localStorage.setItem(KEY, old);
+  var b = (q.get('b') || '').toLowerCase();         // apelido (case-insensitive)
+  var appParam = q.get('app');                       // modo self-serve: URL /exec direta
+
+  // Links antigos do COPA (?b=copa) → redireciona pro app dedicado, preservando p/v/admin.
+  if (!appParam && b === 'copa') {
+    var fwd = [];
+    ['p','v','admin'].forEach(function(k){ var val=q.get(k); if(val) fwd.push(k+'='+encodeURIComponent(val)); });
+    window.location.replace('https://thiagobarretosn-hue.github.io/bolao-copa/' + (fwd.length ? '?' + fwd.join('&') : ''));
+  } else {
+    var REG = {
+      'ambar': { u: 'https://script.google.com/macros/s/AKfycbwuuW1pKmSopbNvnV5qA7gdZK653l9wqJy2b4rsM3W98AOrVGHupmsATDkEz_aanPk-/exec', n: 'Bolão Copa do Mundo 2026 (AMBAR)' }
+    };
+    var slugParam = (q.get('slug') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    var nParam = q.get('n');                          // nome do bolão (self-serve)
+    var regCI = {}; for (var rk in REG) { regCI[rk.toLowerCase()] = REG[rk]; }
+    var entry, slug;
+    if (appParam) {                                  // ?app=<exec>&slug=apelido&n=Nome
+      entry = { u: appParam, n: nParam || '' };
+      slug = slugParam || 'app';
+    } else if (b && regCI[b]) {                       // ?b=apelido registrado
+      entry = regCI[b]; slug = b;
+    } else {                                          // padrão = AMBAR
+      entry = regCI['ambar']; slug = 'ambar';
     }
-  } catch (e) {}
-  var p = q.get('p');
-  try { if (p) localStorage.setItem(KEY, p); else p = localStorage.getItem(KEY); } catch (e) {}
-  var adm = q.get('admin');
-  var AKEY = 'bolao_admin_' + slug;
-  try { if (adm) localStorage.setItem(AKEY, adm); else adm = localStorage.getItem(AKEY); } catch (e) {}
-  var v = q.get('v');
-  var parts = [];
-  if (p) parts.push('p=' + encodeURIComponent(p));
-  if (v) parts.push('v=' + encodeURIComponent(v));
-  if (adm) parts.push('admin=' + encodeURIComponent(adm));
-  var src = BASE + (parts.length ? ('?' + parts.join('&')) : '');
-  var ifr = document.getElementById('app');
-  ifr.onload = function(){ var s=document.getElementById('splash'); if(s) s.style.display='none'; };
-  ifr.src = src;
-  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }
-// --- OUVINTE DE LOGOUT ATUALIZADO (NO INDEX.HTML) ---
- // --- OUVINTE DE LOGOUT ATUALIZADO (SOLUÇÃO DEFINITIVA) ---
+    var BASE = entry.u;
+    if (entry.n) { try {
+      document.title = entry.n;
+      var _amt = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (_amt) _amt.setAttribute('content', entry.n);
+    } catch (e) {} }
+    var KEY = 'bolao_token_' + slug;          // token separado por bolão
+    var p = q.get('p');
+    try { if (p) localStorage.setItem(KEY, p); else p = localStorage.getItem(KEY); } catch (e) {}
+    var adm = q.get('admin');
+    var AKEY = 'bolao_admin_' + slug;
+    try { if (adm) localStorage.setItem(AKEY, adm); else adm = localStorage.getItem(AKEY); } catch (e) {}
+    var v = q.get('v');
+    var parts = [];
+    if (p) parts.push('p=' + encodeURIComponent(p));
+    if (v) parts.push('v=' + encodeURIComponent(v));
+    if (adm) parts.push('admin=' + encodeURIComponent(adm));
+    var src = BASE + (parts.length ? ('?' + parts.join('&')) : '');
+    var ifr = document.getElementById('app');
+    ifr.onload = function(){ var s=document.getElementById('splash'); if(s) s.style.display='none'; };
+    ifr.src = src;
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }
+
+    // Logout: limpa só o cofre DESTE bolão (não apaga outros) e volta pra fachada limpa.
     window.addEventListener('message', function(e) {
       if (e.data === 'logout') {
         try {
-          // 1. Limpa o cofre principal da Casca (GitHub Pages)
-          localStorage.clear();
+          localStorage.removeItem('bolao_token_' + slug);
+          localStorage.removeItem('bolao_admin_' + slug);
           sessionStorage.clear();
-        } catch(err) {}
-
-        // 2. Define o URL oficial limpo
+        } catch (err) {}
         var urlOficial = 'https://thiagobarretosn-hue.github.io/bolao-app/';
-        if (typeof slug !== 'undefined' && slug !== 'copa') {
-          urlOficial += '?b=' + slug;
-        }
-
-        // 3. Truque "Cache Buster": Adiciona um carimbo de tempo
-        // Isso força o navegador a ignorar a cache do Service Worker
+        if (slug && slug !== 'ambar') urlOficial += '?b=' + slug;
         var cacheBuster = (urlOficial.indexOf('?') > -1 ? '&' : '?') + 'sair=' + Date.now();
         window.location.replace(urlOficial + cacheBuster);
       }
     });
-  ;
-
+  }
 </script>
 </body>
 </html>
