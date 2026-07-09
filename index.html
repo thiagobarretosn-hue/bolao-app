@@ -22,11 +22,14 @@
 </style>
 </head>
 <body>
-  <div id="splash"><img src="icon-192.png" alt=""><div class="t">Carregando o bolão…</div></div>
-  <iframe id="app" allow="clipboard-write"></iframe>
+  <div id="splash"><img src="icon-192.png" alt=""><div class="t">Abrindo o bolão…</div></div>
 <script>
   // Esta fachada é o app da AMBAR. O Bolão Copa migrou para repo próprio
   // (https://thiagobarretosn-hue.github.io/bolao-copa/) — PWA separado, sem choque.
+  // 07/2026: o Google passou a recusar web apps do Apps Script em iframe de origem
+  // externa (X-Frame-Options: sameorigin mesmo com ALLOWALL no doGet). A fachada
+  // agora REDIRECIONA para o /exec levando o token — o localStorage daqui continua
+  // sendo a memória de login do PWA (ninguém desloga).
   var q = new URLSearchParams(location.search);
   var b = (q.get('b') || '').toLowerCase();         // apelido (case-insensitive)
   var appParam = q.get('app');                       // modo self-serve: URL /exec direta
@@ -53,16 +56,14 @@
       entry = regCI['ambar']; slug = 'ambar';
     }
     var BASE = entry.u;
-    if (entry.n) { try {
-      document.title = entry.n;
-      var _amt = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-      if (_amt) _amt.setAttribute('content', entry.n);
-    } catch (e) {} }
     var KEY = 'bolao_token_' + slug;          // token separado por bolão
+    var AKEY = 'bolao_admin_' + slug;
+    if (q.get('sair')) {                       // volta do logout: esquece a conta neste aparelho
+      try { localStorage.removeItem(KEY); localStorage.removeItem(AKEY); sessionStorage.clear(); } catch (e) {}
+    }
     var p = q.get('p');
     try { if (p) localStorage.setItem(KEY, p); else p = localStorage.getItem(KEY); } catch (e) {}
     var adm = q.get('admin');
-    var AKEY = 'bolao_admin_' + slug;
     try { if (adm) localStorage.setItem(AKEY, adm); else adm = localStorage.getItem(AKEY); } catch (e) {}
     var v = q.get('v');
     var parts = [];
@@ -70,30 +71,8 @@
     if (v) parts.push('v=' + encodeURIComponent(v));
     if (adm) parts.push('admin=' + encodeURIComponent(adm));
     var src = BASE + (parts.length ? ('?' + parts.join('&')) : '');
-    var ifr = document.getElementById('app');
-    ifr.onload = function(){ var s=document.getElementById('splash'); if(s) s.style.display='none'; };
-    ifr.src = src;
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }
-
-    // Mensagens do iframe (só aceita as vindas do app Google, não de qualquer frame externo).
-    window.addEventListener('message', function(e) {
-      var ok = false;
-      try { ok = /\.googleusercontent\.com$|\.google\.com$/.test(new URL(e.origin).hostname); } catch (_) {}
-      if (!ok) return;
-      if (e.data === 'logout') {
-        try {
-          localStorage.removeItem('bolao_token_' + slug);
-          localStorage.removeItem('bolao_admin_' + slug);
-          sessionStorage.clear();
-        } catch (err) {}
-        var urlOficial = 'https://thiagobarretosn-hue.github.io/bolao-app/';
-        if (slug && slug !== 'ambar') urlOficial += '?b=' + slug;
-        var cacheBuster = (urlOficial.indexOf('?') > -1 ? '&' : '?') + 'sair=' + Date.now();
-        window.location.replace(urlOficial + cacheBuster);
-      } else if (e.data && e.data.tipo === 'bolao_token' && e.data.token) {
-        try { localStorage.setItem('bolao_token_' + slug, e.data.token); } catch (err) {}   // login por senha: grava p/ lembrar a conta
-      }
-    });
+    window.location.replace(src);
   }
 </script>
 </body>
